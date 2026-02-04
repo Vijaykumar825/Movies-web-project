@@ -1,20 +1,19 @@
 import { useEffect, useState } from "react";
 import Search from "./components/Search";
 import Spinner from "./components/Spinner";
+import TrendingMovies from "./components/TrendingMovies";
 import "./App.css";
 import MovieCard from "./components/MovieCard";
 import { useDebounce } from "react-use";
-import { updateSearchCount, getTrendingMovies } from "./appwrite.js"; // Import the function to update search count
+import { updateSearchCount, getTrendingMovies } from "./api.js";
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-//onsole.log("API_KEY:", API_KEY); // Debugging line to check if API_KEY is loaded correctly
 
 const API_OPTIONS = {
   method: "GET",
   headers: {
     accept: "application/json",
-    Authorization: `Bearer ${API_KEY}`,
   },
 };
 
@@ -25,21 +24,22 @@ function App() {
   const [isLoading, setLoading] = useState(false);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState();
   const [trendingMovies, setTrendingMovies] = useState([]);
+
   useDebounce(
     () => {
       setDebouncedSearchTerm(searchTerm);
     },
-    500, // 500ms debounce time
+    500,
     [searchTerm]
   );
 
   const fetchMovies = async (query = "") => {
     setLoading(true);
-    setErrorMessage(""); // Reset error message
+    setErrorMessage("");
     try {
       const endpoint = query
-        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
-        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
+        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&api_key=${API_KEY}`
+        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc&api_key=${API_KEY}`;
       const response = await fetch(endpoint, API_OPTIONS);
       if (!response.ok) {
         throw new Error("Failed to fetch movies");
@@ -52,16 +52,20 @@ function App() {
         setMoviesList(data.results);
       }
       if (query && data.results.length > 0) {
-        // If a search term is provided and movies are found, update the search count
-        await updateSearchCount(query, data.results[0]); // Update with the first movie found
+        await updateSearchCount(query, data.results[0]);
       }
     } catch (error) {
       console.error("Error fetching movies:", error);
-      setErrorMessage("Failed to fetch movies. Please try again later.");
+      setErrorMessage(
+        !API_KEY
+          ? "TMDB API key is missing. Please check your .env file."
+          : "Failed to fetch movies. Please try again later."
+      );
     } finally {
-      setLoading(false); // ✅ Important: turn off loading state
+      setLoading(false);
     }
   };
+
   const loadtrendingMovies = async () => {
     try {
       const movies = await getTrendingMovies();
@@ -70,6 +74,7 @@ function App() {
       console.error("Error fetching trending movies:", error);
     }
   };
+
   useEffect(() => {
     fetchMovies(debouncedSearchTerm);
   }, [debouncedSearchTerm]);
@@ -78,7 +83,7 @@ function App() {
     if (searchTerm.trim() === "") {
       loadtrendingMovies();
     } else {
-      setTrendingMovies([]); // Clear trending list if searching
+      setTrendingMovies([]);
     }
   }, [searchTerm]);
 
@@ -94,35 +99,9 @@ function App() {
           </h1>
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         </header>
-        {trendingMovies.length > 0 && (
-          <section className="mt-8">
-            <h2 className="text-2xl font-bold mb-6">Trending Movies</h2>
-            <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
-              {trendingMovies.map((movie, index) => (
-                <li
-                  key={movie.$id}
-                  className="relative flex flex-col items-center"
-                >
-                  <span className="absolute text-[100px] font-bold text-white/10 z-0 leading-none">
-                    {index + 1}
-                  </span>
-                  <img
-                    src={
-                      movie.poster_url ||
-                      "https://via.placeholder.com/100x150?text=No+Image"
-                    }
-                    alt={movie.title}
-                    className="z-10 w-full rounded shadow-lg"
-                  />
-                  <p className="mt-2 text-sm text-white font-medium z-10">
-                    {index + 1}
-                    <span>.</span>
-                    {movie.title}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </section>
+
+        {trendingMovies && trendingMovies.length > 0 && (
+          <TrendingMovies movies={trendingMovies} />
         )}
 
         <section className="all-movies">

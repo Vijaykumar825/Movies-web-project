@@ -51,19 +51,20 @@
   }
 
   .trending ul {
-    @apply flex flex-row overflow-y-auto gap-0 -mt-10 w-full hide-scrollbar;
+    @apply flex flex-row overflow-y-auto gap-5 -mt-10 w-full hide-scrollbar;
   }
 
   .trending ul li {
     @apply min-w-[230px] flex flex-row items-center;
   }
 
+  /* Remove conflicting text gradient on rank number if any, rely on fancy-text */
   .trending ul li p {
-    @apply text-gradient mt-[22px] whitespace-nowrap;
+    /* Intentionally left blank or minimalistic as styles are handled in component */
   }
 
   .trending ul li img {
-    @apply w-[127px] h-[163px] rounded-lg object-cover -ml-3.5;
+    @apply w-[127px] h-[163px] rounded-lg object-cover -ml-3.5 transform hover:scale-105 transition-transform duration-300 shadow-lg shadow-black/50;
   }
 
   .search {
@@ -87,8 +88,8 @@
   }
 
   .all-movies ul {
-  @apply grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4;
-}
+    @apply grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4;
+  }
 
 
   .movie-card {
@@ -130,10 +131,11 @@
   .movie-card .year {
     @apply text-gray-400 font-medium text-base;
   }
+
   /* In App.css or global CSS */
-.movies-grid {
-  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4;
-}
+  .movies-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4;
+  }
 
 }
 
@@ -144,9 +146,12 @@
   }
 
   .fancy-text {
-    -webkit-text-stroke: 5px rgba(206, 206, 251, 0.5);
+    -webkit-text-stroke: 1px #4d4d4d;
     font-size: 190px;
     font-family: "Bebas Neue", sans-serif;
+    color: #030014;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    line-height: 1;
   }
 
   .hide-scrollbar {
@@ -158,6 +163,7 @@
     display: none;
   }
 }
+
 .text-gradient {
   background: linear-gradient(90deg, #ff6ec4, #7873f5);
   -webkit-background-clip: text;
